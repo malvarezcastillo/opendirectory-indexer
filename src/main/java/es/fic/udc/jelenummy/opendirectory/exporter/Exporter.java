@@ -1,5 +1,9 @@
 package es.fic.udc.jelenummy.opendirectory.exporter;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -9,9 +13,10 @@ import java.util.Set;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.dean.jraw.RedditClient;
-import net.dean.jraw.http.NetworkException;
 import net.dean.jraw.http.UserAgent;
 import net.dean.jraw.http.oauth.Credentials;
 import net.dean.jraw.http.oauth.OAuthData;
@@ -22,9 +27,11 @@ import net.dean.jraw.paginators.SubredditPaginator;
 
 public class Exporter {
 
+	private static final Logger logger = LoggerFactory.getLogger(Exporter.class);
+
 	// https://github.com/robinst/autolink-java
 	private static List<String> extractURLs(String input) {
-		List<String> linksToReturn = new ArrayList<String>();
+		List<String> linksToReturn = new ArrayList<>();
 		LinkExtractor linkExtractor = LinkExtractor.builder().linkTypes(EnumSet.of(LinkType.URL)).build();
 		Iterable<LinkSpan> links = linkExtractor.extractLinks(input);
 		for (LinkSpan link : links) {
@@ -35,10 +42,10 @@ public class Exporter {
 		return linksToReturn;
 	}
 
-	public static void main(String[] args) throws NetworkException, OAuthException {
+	public static void main(String[] args) throws OAuthException {
 		// https://github.com/mattbdean/JRAW/wiki/Quickstart
-		List<Submission> posts = new ArrayList<Submission>();
-		Set<String> urls = new HashSet<String>();
+		List<Submission> posts = new ArrayList<>();
+		Set<String> urls = new HashSet<>();
 
 		UserAgent myUserAgent = UserAgent.of("desktop", "es.fic.udc.jelenummy.opendirectory.exporter", "0.0.1-SNAPSHOT",
 				"opendirectoriesindex");
@@ -61,7 +68,7 @@ public class Exporter {
 			}
 		}
 
-		System.out.println("Got " + posts.size() + " posts!");
+		logger.info("Got {} posts.", posts.size());
 
 		for (int i = 0; i < posts.size(); i++) {
 			Submission s = posts.get(i);
@@ -71,18 +78,17 @@ public class Exporter {
 				urls.add(s.getUrl());
 			}
 		}
+		String urlsString = String.join("\n", urls);
+		logger.info("Got {} urls.", urls.size());
 
-		System.out.println("Got " + urls.size() + " urls!");
+		Path path = Paths.get(args[1]);
+		byte[] strToBytes = urlsString.getBytes();
+		try {
+			Files.write(path, strToBytes);
+		} catch (IOException e) {
+			logger.error("Error while writing URLs to file {}", e);
+		}
 
 	}
 
-	/*
-	 * Getting by timestamps... SubmissionSearchPaginator p = new
-	 * https://github.com/mattbdean/JRAW/issues/100
-	 * SubmissionSearchPaginator(redditClient, "timestamp:1420070400..1421020800");
-	 * p.setSubreddit("opendirectories"); p.setLimit(1000);
-	 * 
-	 * p.setSyntax(SubmissionSearchPaginator.SearchSyntax.CLOUDSEARCH);
-	 * Listing<Submission> submissions = p.next();
-	 */
 }
