@@ -59,11 +59,7 @@ public class Exporter {
 			CloseableHttpResponse response;
 			httpGet.addHeader("User-Agent",
 					"Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36");
-			try {
-				response = httpClient.execute(httpGet);
-			} catch (IOException e) {
-				return false;
-			}
+			response = httpClient.execute(httpGet);
 			return (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 399);
 		} catch (IOException e) {
 			return false;
@@ -114,9 +110,7 @@ public class Exporter {
 
 			ExecutorService executor = Executors.newFixedThreadPool(1);
 
-			Future<Boolean> future = executor.submit(() -> {
-				return checkUrl(url);
-			});
+			Future<Boolean> future = executor.submit(() -> checkUrl(url));
 
 			try {
 				if (future.get(15, TimeUnit.SECONDS)) {
@@ -141,7 +135,5 @@ public class Exporter {
 		} catch (IOException e) {
 			logger.error("Error while writing URLs to file {}", e);
 		}
-
 	}
-
 }
