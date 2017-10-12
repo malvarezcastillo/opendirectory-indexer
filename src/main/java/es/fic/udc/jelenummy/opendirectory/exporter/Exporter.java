@@ -8,7 +8,11 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
@@ -28,6 +32,7 @@ import net.dean.jraw.paginators.SubredditPaginator;
 public class Exporter {
 
 	private static final Logger logger = LoggerFactory.getLogger(Exporter.class);
+	private static Set<String> availableUrls;
 
 	// https://github.com/robinst/autolink-java
 	private static List<String> extractURLs(String input) {
@@ -46,6 +51,7 @@ public class Exporter {
 		// https://github.com/mattbdean/JRAW/wiki/Quickstart
 		List<Submission> posts = new ArrayList<>();
 		Set<String> urls = new HashSet<>();
+		availableUrls = new HashSet<>();
 
 		UserAgent myUserAgent = UserAgent.of("desktop", "es.fic.udc.jelenummy.opendirectory.exporter", "0.0.1-SNAPSHOT",
 				"opendirectoriesindex");
@@ -81,6 +87,24 @@ public class Exporter {
 		String urlsString = String.join("\n", urls);
 		logger.info("Got {} urls.", urls.size());
 
+		ExecutorService executor = Executors.newFixedThreadPool(urls.size());
+
+		for (String url : urls) {
+			executor.execute(new URLChecker(url));
+		}
+
+		executor.shutdown();
+		try {
+			if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+				executor.shutdownNow();
+			}
+		} catch (InterruptedException e) {
+			executor.shutdownNow();
+			Thread.currentThread().interrupt();
+		}
+
+		logger.info("Got {} available urls.", availableUrls.size());
+
 		Path path = Paths.get(args[1]);
 		byte[] strToBytes = urlsString.getBytes();
 		try {
@@ -89,6 +113,26 @@ public class Exporter {
 			logger.error("Error while writing URLs to file {}", e);
 		}
 
+	}
+
+	private static class URLChecker implements Runnable {
+		private String url;
+
+		private static boolean checkUrl(String url) {
+			Random random = new Random();
+			return random.nextBoolean();
+		}
+
+		public URLChecker(String url) {
+			this.url = url;
+		}
+
+		@Override
+		public void run() {
+			if (checkUrl(url)) {
+				availableUrls.add(url);
+			}
+		}
 	}
 
 }
