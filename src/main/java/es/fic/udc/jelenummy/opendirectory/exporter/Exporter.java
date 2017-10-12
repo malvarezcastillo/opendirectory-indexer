@@ -8,12 +8,15 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
@@ -119,8 +122,24 @@ public class Exporter {
 		private String url;
 
 		private static boolean checkUrl(String url) {
-			Random random = new Random();
-			return random.nextBoolean();
+			try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+				HttpHead httpHead = new HttpHead("http://targethost/homepage");
+				CloseableHttpResponse response;
+				try {
+					response = httpClient.execute(httpHead);
+				} catch (IOException e) {
+					logger.info("Couldn't check URL: {}", url);
+					logger.error("Detailed exception: {}", e);
+					return false;
+				}
+				logger.info("URL {} Response {}", url, response.getStatusLine());
+				return (response.getStatusLine().getStatusCode() >= 200
+						&& response.getStatusLine().getStatusCode() <= 399);
+			} catch (IOException e) {
+				logger.info("Couldn't check URL: {}", url);
+				logger.error("Detailed exception: {}", e);
+				return false;
+			}
 		}
 
 		public URLChecker(String url) {
@@ -132,6 +151,7 @@ public class Exporter {
 			if (checkUrl(url)) {
 				availableUrls.add(url);
 			}
+
 		}
 	}
 
