@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.nibor.autolink.LinkExtractor;
@@ -54,12 +54,12 @@ public class Exporter {
 
 	private static boolean checkUrl(String url) {
 		try (CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build()) {
-			HttpGet httpGet = new HttpGet(url);
+			HttpHead request = new HttpHead(url);
 
 			CloseableHttpResponse response;
-			httpGet.addHeader("User-Agent",
+			request.addHeader("User-Agent",
 					"Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36");
-			response = httpClient.execute(httpGet);
+			response = httpClient.execute(request);
 			return (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 399);
 		} catch (IOException e) {
 			return false;
