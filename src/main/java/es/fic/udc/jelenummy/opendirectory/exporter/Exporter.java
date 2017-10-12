@@ -113,7 +113,7 @@ public class Exporter {
 			Future<Boolean> future = executor.submit(() -> checkUrl(url));
 
 			try {
-				if (future.get(15, TimeUnit.SECONDS)) {
+				if (future.get(3, TimeUnit.SECONDS)) {
 					logger.info("URL {} is AVAILABLE", url);
 					availableUrls.add(url);
 				} else {
