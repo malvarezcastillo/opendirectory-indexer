@@ -62,7 +62,6 @@ public class Exporter {
 			response = httpClient.execute(httpGet);
 			return (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 399);
 		} catch (IOException e) {
-			logger.error("Error checking URL {}", e);
 			return false;
 		}
 	}
@@ -133,8 +132,11 @@ public class Exporter {
 		byte[] strToBytes = urlsString.getBytes();
 		try {
 			Files.write(path, strToBytes);
+			logger.info("Wrote Available URLs to file");
 		} catch (IOException e) {
 			logger.error("Error while writing URLs to file {}", e);
 		}
+
+		System.exit(0);
 	}
 }
