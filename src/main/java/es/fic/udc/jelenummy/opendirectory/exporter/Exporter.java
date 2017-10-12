@@ -62,6 +62,7 @@ public class Exporter {
 			response = httpClient.execute(httpGet);
 			return (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 399);
 		} catch (IOException e) {
+			logger.error("Error checking URL {}", e);
 			return false;
 		}
 	}
