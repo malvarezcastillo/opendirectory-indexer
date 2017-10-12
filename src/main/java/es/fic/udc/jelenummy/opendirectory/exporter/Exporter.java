@@ -9,14 +9,17 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
@@ -34,8 +37,7 @@ import net.dean.jraw.paginators.SubredditPaginator;
 
 public class Exporter {
 
-	private static final Logger logger = LoggerFactory.getLogger(Exporter.class);
-	private static Set<String> availableUrls;
+	private static final Logger logger = LoggerFactory.getLogger(Exporter.class.getName());
 
 	// https://github.com/robinst/autolink-java
 	private static List<String> extractURLs(String input) {
@@ -50,11 +52,29 @@ public class Exporter {
 		return linksToReturn;
 	}
 
+	private static boolean checkUrl(String url) {
+		try (CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build()) {
+			HttpGet httpGet = new HttpGet(url);
+
+			CloseableHttpResponse response;
+			httpGet.addHeader("User-Agent",
+					"Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36");
+			try {
+				response = httpClient.execute(httpGet);
+			} catch (IOException e) {
+				return false;
+			}
+			return (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 399);
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
 	public static void main(String[] args) throws OAuthException {
 		// https://github.com/mattbdean/JRAW/wiki/Quickstart
 		List<Submission> posts = new ArrayList<>();
 		Set<String> urls = new HashSet<>();
-		availableUrls = new HashSet<>();
+		Set<String> availableUrls = new HashSet<>();
 
 		UserAgent myUserAgent = UserAgent.of("desktop", "es.fic.udc.jelenummy.opendirectory.exporter", "0.0.1-SNAPSHOT",
 				"opendirectoriesindex");
@@ -87,27 +107,33 @@ public class Exporter {
 				urls.add(s.getUrl());
 			}
 		}
-		String urlsString = String.join("\n", urls);
 		logger.info("Got {} urls.", urls.size());
-
-		ExecutorService executor = Executors.newFixedThreadPool(urls.size());
-
+		int i = 0;
 		for (String url : urls) {
-			executor.execute(new URLChecker(url));
-		}
+			logger.info("Checking ({} of {}): {}", ++i, urls.size(), url);
 
-		executor.shutdown();
-		try {
-			if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
-				executor.shutdownNow();
+			ExecutorService executor = Executors.newFixedThreadPool(1);
+
+			Future<Boolean> future = executor.submit(() -> {
+				return checkUrl(url);
+			});
+
+			try {
+				if (future.get(15, TimeUnit.SECONDS)) {
+					logger.info("URL {} is AVAILABLE", url);
+					availableUrls.add(url);
+				} else {
+					logger.warn("URL {} is DOWN", url);
+				}
+			} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				logger.warn("URL {} is DOWN (Timed Out)", url);
 			}
-		} catch (InterruptedException e) {
-			executor.shutdownNow();
-			Thread.currentThread().interrupt();
+
 		}
 
 		logger.info("Got {} available urls.", availableUrls.size());
 
+		String urlsString = String.join("\n", availableUrls);
 		Path path = Paths.get(args[1]);
 		byte[] strToBytes = urlsString.getBytes();
 		try {
@@ -116,43 +142,6 @@ public class Exporter {
 			logger.error("Error while writing URLs to file {}", e);
 		}
 
-	}
-
-	private static class URLChecker implements Runnable {
-		private String url;
-
-		private static boolean checkUrl(String url) {
-			try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-				HttpHead httpHead = new HttpHead("http://targethost/homepage");
-				CloseableHttpResponse response;
-				try {
-					response = httpClient.execute(httpHead);
-				} catch (IOException e) {
-					logger.info("Couldn't check URL: {}", url);
-					logger.error("Detailed exception: {}", e);
-					return false;
-				}
-				logger.info("URL {} Response {}", url, response.getStatusLine());
-				return (response.getStatusLine().getStatusCode() >= 200
-						&& response.getStatusLine().getStatusCode() <= 399);
-			} catch (IOException e) {
-				logger.info("Couldn't check URL: {}", url);
-				logger.error("Detailed exception: {}", e);
-				return false;
-			}
-		}
-
-		public URLChecker(String url) {
-			this.url = url;
-		}
-
-		@Override
-		public void run() {
-			if (checkUrl(url)) {
-				availableUrls.add(url);
-			}
-
-		}
 	}
 
 }
