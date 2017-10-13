@@ -1,0 +1,7 @@
+version=
+reddit.username=
+reddit.password=
+reddit.redditClientId=
+reddit.redditClientSecret=
+outputFilename=urls.txt
+timeout=3
