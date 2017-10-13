@@ -57,7 +57,7 @@ public class Exporter {
 		for (LinkSpan link : links) {
 			link.getBeginIndex();
 			link.getEndIndex();
-			linksToReturn.add(input.substring(link.getBeginIndex(), link.getEndIndex()));
+			linksToReturn.add(input.substring(link.getBeginIndex(), link.getEndIndex()).replace("ftp://", "http://"));
 		}
 		return linksToReturn;
 	}
@@ -159,7 +159,7 @@ public class Exporter {
 			if (s.isSelfPost()) {
 				urls.addAll(extractURLs(s.getSelftext()));
 			} else {
-				urls.add(s.getUrl());
+				urls.add(s.getUrl().replace("ftp://", "http://"));
 			}
 		}
 		logger.info("Got {} urls.", urls.size());
