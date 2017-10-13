@@ -1,5 +1,6 @@
 package es.fic.udc.jelenummy.opendirectory.exporter;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -38,6 +40,14 @@ import net.dean.jraw.paginators.SubredditPaginator;
 public class Exporter {
 
 	private static final Logger logger = LoggerFactory.getLogger(Exporter.class.getName());
+	private static String appId;
+	private static String version;
+	private static String redditUsername;
+	private static String redditPassword;
+	private static String redditClientId;
+	private static String redditClientSecret;
+	private static String outputFileName;
+	private static Integer timeoutTime;
 
 	// https://github.com/robinst/autolink-java
 	private static List<String> extractURLs(String input) {
@@ -66,17 +76,67 @@ public class Exporter {
 		}
 	}
 
+	private static void init(String rootPath) {
+		String appConfigPath = rootPath + "exporter.properties";
+
+		Properties p = new Properties();
+		try (FileInputStream fs = new FileInputStream(appConfigPath)) {
+			p.load(fs);
+			appId = p.getProperty("reddit.appId", "es.fic.udc.jelenummy.opendirectory-indexer");
+			version = p.getProperty("version");
+			redditUsername = p.getProperty("reddit.username");
+			redditPassword = p.getProperty("reddit.password");
+			redditClientId = p.getProperty("reddit.redditClientId");
+			redditClientSecret = p.getProperty("reddit.redditClientSecret");
+			outputFileName = p.getProperty("outputFilename");
+			timeoutTime = Integer.parseInt(p.getProperty("timeout"));
+
+			if (version == null) {
+				throw new MissingPropertyException("version");
+			}
+			if (redditUsername == null) {
+				throw new MissingPropertyException("redditUsername");
+			}
+			if (redditPassword == null) {
+				throw new MissingPropertyException("redditPassword");
+			}
+			if (redditClientId == null) {
+				throw new MissingPropertyException("redditClientId");
+			}
+			if (redditClientSecret == null) {
+				throw new MissingPropertyException("redditClientSecret");
+			}
+			if (outputFileName == null) {
+				throw new MissingPropertyException("outputFileName");
+			}
+			if (timeoutTime == null) {
+				throw new MissingPropertyException("timeoutTime");
+			}
+
+		} catch (NumberFormatException e) {
+			logger.error("Incorrect numeric property {}", e);
+			System.exit(-1);
+		} catch (IOException e) {
+			logger.error("Error opening properties file {}", e);
+			System.exit(-1);
+		} catch (MissingPropertyException e) {
+			logger.error("Missing property {}", e);
+			System.exit(-1);
+		}
+
+	}
+
 	public static void main(String[] args) throws OAuthException {
+		init(Thread.currentThread().getContextClassLoader().getResource("").getPath());
 		// https://github.com/mattbdean/JRAW/wiki/Quickstart
 		List<Submission> posts = new ArrayList<>();
 		Set<String> urls = new HashSet<>();
 		Set<String> availableUrls = new HashSet<>();
 
-		UserAgent myUserAgent = UserAgent.of("desktop", "es.fic.udc.jelenummy.opendirectory.exporter", "0.0.2",
-				"opendirectoriesindex");
+		UserAgent myUserAgent = UserAgent.of("desktop", appId, version, redditUsername);
 		RedditClient redditClient = new RedditClient(myUserAgent);
-		Credentials credentials = Credentials.script("opendirectoriesindex", args[0], "S-cIDhMuFf1rDA",
-				"5cCiiVRM_rSduPuZh8Qf5e_z-gE");
+		Credentials credentials = Credentials.script(redditUsername, redditPassword, redditClientId,
+				redditClientSecret);
 
 		OAuthData authData = redditClient.getOAuthHelper().easyAuth(credentials);
 		redditClient.authenticate(authData);
@@ -113,7 +173,7 @@ public class Exporter {
 			Future<Boolean> future = executor.submit(() -> checkUrl(url));
 
 			try {
-				if (future.get(3, TimeUnit.SECONDS)) {
+				if (future.get(timeoutTime, TimeUnit.SECONDS)) {
 					logger.info("URL {} is AVAILABLE", url);
 					availableUrls.add(url);
 				} else {
@@ -128,7 +188,7 @@ public class Exporter {
 		logger.info("Got {} available urls.", availableUrls.size());
 
 		String urlsString = String.join("\n", availableUrls);
-		Path path = Paths.get(args[1]);
+		Path path = Paths.get(outputFileName);
 		byte[] strToBytes = urlsString.getBytes();
 		try {
 			Files.write(path, strToBytes);
