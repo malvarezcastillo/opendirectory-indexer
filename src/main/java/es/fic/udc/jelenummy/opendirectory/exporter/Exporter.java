@@ -72,7 +72,7 @@ public class Exporter {
 		Set<String> urls = new HashSet<>();
 		Set<String> availableUrls = new HashSet<>();
 
-		UserAgent myUserAgent = UserAgent.of("desktop", "es.fic.udc.jelenummy.opendirectory.exporter", "0.0.1-SNAPSHOT",
+		UserAgent myUserAgent = UserAgent.of("desktop", "es.fic.udc.jelenummy.opendirectory.exporter", "0.0.2",
 				"opendirectoriesindex");
 		RedditClient redditClient = new RedditClient(myUserAgent);
 		Credentials credentials = Credentials.script("opendirectoriesindex", args[0], "S-cIDhMuFf1rDA",
