@@ -76,11 +76,10 @@ public class Exporter {
 		}
 	}
 
-	private static void init(String rootPath) {
-		String appConfigPath = rootPath + "exporter.properties";
+	private static void init(String path) {
 
 		Properties p = new Properties();
-		try (FileInputStream fs = new FileInputStream(appConfigPath)) {
+		try (FileInputStream fs = new FileInputStream(path)) {
 			p.load(fs);
 			appId = p.getProperty("reddit.appId", "es.fic.udc.jelenummy.opendirectory-indexer");
 			version = p.getProperty("version");
@@ -127,7 +126,7 @@ public class Exporter {
 	}
 
 	public static void main(String[] args) throws OAuthException {
-		init(Thread.currentThread().getContextClassLoader().getResource("").getPath());
+		init(args[0]);
 		// https://github.com/mattbdean/JRAW/wiki/Quickstart
 		List<Submission> posts = new ArrayList<>();
 		Set<String> urls = new HashSet<>();
