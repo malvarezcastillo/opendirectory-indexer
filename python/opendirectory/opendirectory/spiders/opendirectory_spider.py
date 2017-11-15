@@ -8,6 +8,8 @@ class DirectorySpider(scrapy.Spider):
     with open(urls) as f:
         start_urls = f.readlines()
     start_urls = [x.strip() for x in start_urls]
+    allowed_domains = [url.split("//")[-1].split("/")[0] for url in start_urls]
+    print allowed_domains
 
     rules = [
         Rule(
@@ -28,7 +30,6 @@ class DirectorySpider(scrapy.Spider):
         }
         
         links = LinkExtractor(canonicalize=True, unique=True).extract_links(response)
-        # Now go through all the found links
         for link in links:
             if '..' not in link.url and link.url is not response.url:
                 yield scrapy.Request(link.url, method="HEAD")
