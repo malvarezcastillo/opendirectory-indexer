@@ -1,6 +1,6 @@
 import scrapy
 import re
-import requests
+import datetime
 from scrapy.linkextractor import LinkExtractor
 from scrapy.spiders import Rule, CrawlSpider
 
@@ -31,11 +31,27 @@ class DirectorySpider(scrapy.Spider):
         return False
 
     def parse(self, response):
-        content_type = response.headers['Content-Type']
+        UNKNOWN_TYPE = 'unknown'
+        SERVER_DATE_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
+        DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+        content_type = response.headers.get('Content-Type', UNKNOWN_TYPE)
+        date_header = response.headers.get('Date')
+        lastmodified_header = response.headers.get('Last-Modified')
+        date = None
+        lastmodified = None
+        if date_header is not None:
+            date = datetime.datetime.strptime(date_header, SERVER_DATE_FORMAT).strftime(DATETIME_FORMAT)
+        if lastmodified_header is not None:
+            lastmodified = datetime.datetime.strptime(lastmodified_header, SERVER_DATE_FORMAT).strftime(DATETIME_FORMAT)
+
         yield {
+                #'headers': response.headers,
                 'url_to': response.url,
-                'headers': response.headers,
-                'content_type' : content_type
+                'content_type' : content_type,
+                'date' : date,
+                'source_server' : response.headers.get('Server', UNKNOWN_TYPE),
+                'content_length' : response.headers.get('Content-Length', 0),
+                'last_modified' : lastmodified
         }
 
         if self.allowedcontenttype(content_type):
