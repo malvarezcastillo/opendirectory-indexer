@@ -183,7 +183,7 @@
     <field name="last-modified" type="tdate" stored="true" indexed="true"/>
     <field name="content-type" type="string" stored="true" indexed="false"/>
     <field name="source-server" type="string" stored="true" indexed="false"/>
-    <field name="content-length" type="tint" indexed="true" stored="true"/>
+    <field name="content-length" type="tlong" indexed="true" stored="true"/>
     <field name="text" type="text_en_splitting" stored="false" indexed="true" multiValued="true"/>
  </fields>
 
