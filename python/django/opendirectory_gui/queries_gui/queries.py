@@ -50,10 +50,13 @@ def getLocation(host):
     f.close()
     location = json.loads(json_string)
     print(location)
-    location_city = location['city']
-    location_state = location['region_name']
-    location_country = location['country_name']
-    return location_city + ", " + location_state + ", " + location_country 
+    location_city = location.get('city')
+    location_state = location.get('region_name')
+    location_country = location.get('country_name')
+    if location_city is not '' and location_state is not '':
+        return location_city + ", " + location_state + ", " + location_country 
+    else:
+        return location_country
             
 
 def searchByKeywords(keywords, order, rows, min_size, max_size):
