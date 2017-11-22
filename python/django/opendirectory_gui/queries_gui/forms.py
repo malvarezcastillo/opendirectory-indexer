@@ -13,3 +13,10 @@ class QueryForm(forms.Form):
         label='Smallest size (in MiB) ', min_value=0, required=False)
     max_size = forms.IntegerField(
         label='Biggest size (in MiB) ', min_value=0, required=False)
+    order = forms.ChoiceField(label='Order by ',
+                              choices=[("relevance", "Relevance"),
+                                       ("size", "Size"),
+                                       ("date", "Date")])
+    row_num = forms.IntegerField(
+            label='Max number of results ', initial=10, min_value=10,
+            required=True)

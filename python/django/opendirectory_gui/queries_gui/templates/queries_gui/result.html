@@ -1,12 +1,15 @@
 <table style="width:100%">
+
     {% for result in results %}
     <tr>
-        <th>{{ result.id }}</th>
+        <th>{{ result.filename }}</th>
         <th>{{ result.lastmodified }}</th>
         <th>{{ result.content_length }}</th>
         <th>{{ result.content_type }}</th>
         <th>{{ result.source }}</th>
-        
+        <th>
+            <a href="{{ result.id }}">{{ result.id }}</a>
+        </th>
     </tr>
     {% endfor %}
 </table>
