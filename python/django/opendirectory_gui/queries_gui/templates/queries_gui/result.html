@@ -1,5 +1,21 @@
-<table style="width:100%">
+<style>
+    table,
+    th,
+    td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+</style>
 
+<table style="width:100%">
+    <tr>
+        <th>File name</th>
+        <th>Last modified</th>
+        <th>Size (in MiB)</th>
+        <th>Content type</th>
+        <th>Server source</th>
+        <th>Direct link</th>
+    </tr>
     {% for result in results %}
     <tr>
         <th>{{ result.filename }}</th>

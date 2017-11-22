@@ -31,6 +31,8 @@ def search(request):
     if form.is_valid():
         keywords_form = form.cleaned_data['keywords']
         rows = form.cleaned_data['row_num']
+        min_size = form.cleaned_data.get('min_size')
+        max_size = form.cleaned_data.get('max_size')
         keywords = [keyword.strip() for keyword in keywords_form.split(',')]
         keywords_send = ''
         if len(keywords) > 1:
@@ -42,7 +44,7 @@ def search(request):
         else:
             keywords_send = keywords[0]
         order = form.cleaned_data['order']
-        results = queries.searchByKeywords(keywords_send, order, rows)
+        results = queries.searchByKeywords(keywords_send, order, rows, min_size, max_size)
         template = loader.get_template('queries_gui/result.html')
         context = {
             'results': results,
