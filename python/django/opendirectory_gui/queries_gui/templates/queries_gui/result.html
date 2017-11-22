@@ -8,6 +8,11 @@
 </style>
 
 <table style="width:100%">
+    {% if not results %}
+    <p>NO RESULTS FOUND</p>
+    {% endif %} 
+    
+    {%if results %}
     <tr>
         <th>File name</th>
         <th>Last modified</th>
@@ -19,6 +24,8 @@
         <th>Server source</th>
         <th>Direct link</th>
     </tr>
+
+
     {% for result in results %}
     <tr>
         <th>{{ result.filename }}</th>
@@ -33,5 +40,6 @@
             <a href="{{ result.id }}">{{ result.id }}</a>
         </th>
     </tr>
-    {% endfor %}
+    {% endfor %} {% endif %}
+
 </table>
