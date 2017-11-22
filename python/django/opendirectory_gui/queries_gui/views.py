@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 import queries
-
+import re
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.template import loader
@@ -13,7 +13,7 @@ from .forms import QueryForm
 TODO:
 - Ordenacion por relevancia, tamaño o fecha -> DONE
 - Usar pesos -> DONE
-- Implementar consultas (todas) -> 
+- Implementar consultas (todas) -> DONE
 - Añadir test de latencia y posición 
 - Limitar numero de filas devueltas -> DONE
 - Darle un poco de aspecto a la interfaz (??)
@@ -30,6 +30,7 @@ def search(request):
     form = QueryForm(request.POST)
     if form.is_valid():
         keywords_form = form.cleaned_data['keywords']
+        keywords_form = re.sub("\s+", ",", keywords_form.strip())
         rows = form.cleaned_data['row_num']
         min_size = form.cleaned_data.get('min_size')
         max_size = form.cleaned_data.get('max_size')
@@ -38,7 +39,7 @@ def search(request):
         if len(keywords) > 1:
             i = 1
             for k in keywords[::-1]:
-                keywords_send += 'id:*' + k + '*^' + str(i) + ' AND '
+                keywords_send += k + '^' + str(i) + ' AND '
                 i += 1
             keywords_send = keywords_send[:keywords_send.rfind('AND')]
         else:

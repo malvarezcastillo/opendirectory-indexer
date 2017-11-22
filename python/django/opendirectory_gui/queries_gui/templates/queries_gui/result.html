@@ -13,6 +13,9 @@
         <th>Last modified</th>
         <th>Size (in MiB)</th>
         <th>Content type</th>
+        <th>Host availability</th>
+        <th>Host geolocation</th>
+        <th>Host IP</th>
         <th>Server source</th>
         <th>Direct link</th>
     </tr>
@@ -22,6 +25,9 @@
         <th>{{ result.lastmodified }}</th>
         <th>{{ result.content_length }}</th>
         <th>{{ result.content_type }}</th>
+        <th>{{ result.available }}</th>
+        <th>{{ result.location }}</th>
+        <th>{{ result.ip }}</th>
         <th>{{ result.source }}</th>
         <th>
             <a href="{{ result.id }}">{{ result.id }}</a>
