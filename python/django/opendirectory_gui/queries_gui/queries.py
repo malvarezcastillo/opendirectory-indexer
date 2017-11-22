@@ -53,7 +53,7 @@ def getLocation(host):
     location_city = location.get('city')
     location_state = location.get('region_name')
     location_country = location.get('country_name')
-    if location_city is not '' and location_state is not '':
+    if location_city.strip() and location_state.strip():
         return location_city + ", " + location_state + ", " + location_country 
     else:
         return location_country
