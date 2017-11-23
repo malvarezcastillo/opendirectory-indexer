@@ -20,6 +20,10 @@ table tr {
   border: 1px solid #ddd;
   padding: .35em;
 }
+table tr:nth-child(even){background-color: #f2f2f2;}
+
+table tr:hover {background-color: #ddd;}
+
 table th,
 table td {
   padding: .625em;
@@ -29,7 +33,13 @@ table th {
   font-size: .85em;
   letter-spacing: .1em;
   text-transform: uppercase;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #4f5b7a;
+  color: white;
 }
+
 @media screen and (max-width: 600px) {
   table {
     border: 0;
@@ -87,6 +97,15 @@ table th {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.filename:hover, .last_modified:hover, .content_length:hover, 
+.content_type:hover, .available:hover, .location:hover, 
+.ip:hover, .source:hover{
+    width: auto;
+    overflow: visible; 
+    white-space: normal;
+    height:auto; 
+}
 </style>
 
 <table style="width:100%">
@@ -110,17 +129,17 @@ table th {
 
     {% for result in results %}
     <tr>
-        <th class="truncate">{{ result.filename }}</th>
-        <th class="truncate">{{ result.lastmodified }}</th>
-        <th class="truncate">{{ result.content_length }}</th>
-        <th class="truncate">{{ result.content_type }}</th>
-        <th class="truncate">{{ result.available }}</th>
-        <th class="truncate">{{ result.location }}</th>
-        <th class="truncate">{{ result.ip }}</th>
-        <th class="truncate">{{ result.source }}</th>
-        <th class="truncate">
+        <td class="truncate filename">{{ result.filename }}</td>
+        <td class="truncate last_modified">{{ result.lastmodified }}</td>
+        <td class="truncate content_length">{{ result.content_lengtd }}</td>
+        <td class="truncate content_type">{{ result.content_type }}</td>
+        <td class="truncate available">{{ result.available }}</td>
+        <td class="truncate location">{{ result.location }}</td>
+        <td class="truncate ip">{{ result.ip }}</td>
+        <td class="truncate source">{{ result.source }}</td>
+        <td class="truncate">
             <a href="{{ result.id }}">{{ result.id }}</a>
-        </th>
+        </td>
     </tr>
     {% endfor %} {% endif %}
 
