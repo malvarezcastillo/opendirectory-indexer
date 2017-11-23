@@ -1,15 +1,97 @@
 <style>
-    table,
-    th,
-    td {
-        border: 1px solid black;
-        border-collapse: collapse;
-    }
+    body {
+  font-family: "Open Sans", sans-serif;
+  line-height: 1.25;
+}
+table {
+  border: 1px solid #ccc;
+  border-collapse: collapse;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  table-layout: fixed;
+}
+table caption {
+  font-size: 1.5em;
+  margin: .5em 0 .75em;
+}
+table tr {
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  padding: .35em;
+}
+table th,
+table td {
+  padding: .625em;
+  text-align: center;
+}
+table th {
+  font-size: .85em;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+@media screen and (max-width: 600px) {
+  table {
+    border: 0;
+  }
+  table caption {
+    font-size: 1.3em;
+  }
+  table thead {
+    border: none;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+  table tr {
+    border-bottom: 3px solid #ddd;
+    display: block;
+    margin-bottom: .625em;
+  }
+  table td {
+    border-bottom: 1px solid #ddd;
+    display: block;
+    font-size: .8em;
+    text-align: right;
+  }
+  table td:before {
+    /*
+    * aria-label has no advantage, it won't be read inside a table
+    content: attr(aria-label);
+    */
+    content: attr(data-label);
+    float: left;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  table td:last-child {
+    border-bottom: 0;
+  }
+}
+.no_results{
+    border: 1px solid #CED5D7;
+    border-radius: 6px;
+    padding: 20px 20px 20px;
+    margin-top: 50px;
+    background-color: #F7BBBB;
+    text-align: center;
+    box-shadow: 0px 5px 10px red, 0 0 0 10px #F7BBBB inset;"
+}
+.truncate {
+  width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>
 
 <table style="width:100%">
     {% if not results %}
-    <p>NO RESULTS FOUND</p>
+    <p class="no_results"><b>NO RESULTS FOUND</b></p>
     {% endif %} 
     
     {%if results %}
@@ -28,15 +110,15 @@
 
     {% for result in results %}
     <tr>
-        <th>{{ result.filename }}</th>
-        <th>{{ result.lastmodified }}</th>
-        <th>{{ result.content_length }}</th>
-        <th>{{ result.content_type }}</th>
-        <th>{{ result.available }}</th>
-        <th>{{ result.location }}</th>
-        <th>{{ result.ip }}</th>
-        <th>{{ result.source }}</th>
-        <th>
+        <th class="truncate">{{ result.filename }}</th>
+        <th class="truncate">{{ result.lastmodified }}</th>
+        <th class="truncate">{{ result.content_length }}</th>
+        <th class="truncate">{{ result.content_type }}</th>
+        <th class="truncate">{{ result.available }}</th>
+        <th class="truncate">{{ result.location }}</th>
+        <th class="truncate">{{ result.ip }}</th>
+        <th class="truncate">{{ result.source }}</th>
+        <th class="truncate">
             <a href="{{ result.id }}">{{ result.id }}</a>
         </th>
     </tr>
