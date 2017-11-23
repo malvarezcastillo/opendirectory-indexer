@@ -9,17 +9,6 @@ from django.template import loader
 from .forms import QueryForm
 
 
-'''
-TODO:
-- Ordenacion por relevancia, tamaño o fecha -> DONE
-- Usar pesos -> DONE
-- Implementar consultas (todas) -> DONE
-- Añadir test de latencia y posición 
-- Limitar numero de filas devueltas -> DONE
-- Darle un poco de aspecto a la interfaz (??)
-'''
-
-
 def index(request):
     template = loader.get_template('queries_gui/index.html')
     form = QueryForm()
