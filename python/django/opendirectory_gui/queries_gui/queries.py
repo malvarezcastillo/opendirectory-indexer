@@ -49,7 +49,6 @@ def getLocation(host):
     json_string = f.read()
     f.close()
     location = json.loads(json_string)
-    print(location)
     location_city = location.get('city')
     location_state = location.get('region_name')
     location_country = location.get('country_name')
