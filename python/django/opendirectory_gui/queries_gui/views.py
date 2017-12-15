@@ -23,7 +23,9 @@ def search(request):
         rows = form.cleaned_data['row_num']
         min_size = form.cleaned_data.get('min_size')
         max_size = form.cleaned_data.get('max_size')
-        keywords = [keyword.strip() for keyword in keywords_form.split(',')]
+        keywords_split = keywords_form.split(',')
+        keywords_split = filter(None, keywords_split)
+        keywords = [keyword.strip() for keyword in keywords_split]
         keywords_send = ''
         if len(keywords) > 1:
             i = 1
